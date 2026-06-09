@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>빛과 밤의 사랑 재화 환산기</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #1a1a1a;
+    }
+
+    .sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-card {
+      background: #fafaf8;
+      border: 1px solid #e8e6e0;
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+    }
+
+    .input-card label {
+      font-size: 11px;
+      color: #888;
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .input-card input {
+      width: 100%;
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid #ddd;
+      outline: none;
+      padding: 3px 0;
+    }
+
+    .input-card input:focus {
+      border-bottom-color: #6b5ce7;
+    }
+
+    .input-card .unit-hint {
+      font-size: 10px;
+      color: #aaa;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #999;
+      background: #fafaf8;
+      border-bottom: 1px solid #eee;
+    }
+
+    thead th:last-child { text-align: right; }
+
+    tbody td {
+      padding: 11px 10px;
+      border-bottom: 1px solid #f0eeea;
+      color: #1a1a1a;
+    }
+
+    tbody td:last-child { text-align: right; }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    .val {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .unit-label {
+      font-size: 12px;
+      color: #999;
+      margin-left: 3px;
+    }
+
+    tr.highlighted td {
+      background: #f0edfb;
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: #bbb;
+      padding: 24px;
+      font-size: 13px;
+    }
+
+    .reset-btn {
+      margin-top: 1rem;
+      font-size: 13px;
+      color: #888;
+      background: none;
+      border: 1px solid #e0ddd8;
+      border-radius: 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+    }
+
+    .reset-btn:hover {
+      background: #f5f4f0;
+    }
+
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 11px;
+      color: #ccc;
+      text-align: center;
+    }
+
+    @media (max-width: 400px) {
+      .input-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>✨ 빛과 밤의 사랑 재화 환산기</h1>
+  <p class="sub">하나만 입력하면 나머지가 자동으로 계산됩니다.</p>
+
+  <div class="input-grid">
+    <div class="input-card">
+      <label>⭐ 북극성</label>
+      <input type="number" id="polaris" placeholder="0" min="0" step="0.01" />
+      <div class="unit-hint">1개 = 100작곰<br>= 300원</div>
+    </div>
+    <div class="input-card">
+      <label>🐻 작은곰자리</label>
+      <input type="number" id="bear" placeholder="0" min="0" step="1" />
+      <div class="unit-hint">300개 = 뽑기 1회</div>
+    </div>
+    <div class="input-card">
+      <label>🪶 깃펜</label>
+      <input type="number" id="pen" placeholder="0" min="0" step="1" />
+      <div class="unit-hint">1개 = 뽑기 1회</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>재화</th>
+        <th>수량</th>
+      </tr>
+    </thead>
+    <tbody id="result-body">
+      <tr>
+        <td colspan="2" class="empty-msg">위 칸에 숫자를 입력해 주세요.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="reset-btn" onclick="resetAll()">↺ 초기화</button>
+
+  <p class="footer">1북극성 = 100작은곰자리 = 300원 기준</p>
+</div>
+
+<script>
+  const BEAR_PER_POLARIS = 100;
+  const WON_PER_POLARIS = 300;
+  const BEAR_PER_PULL = 300;
+
+  const inputs = {
+    polaris: document.getElementById('polaris'),
+    bear: document.getElementById('bear'),
+    pen: document.getElementById('pen'),
+  };
+
+  let active = null;
+
+  Object.entries(inputs).forEach(([key, el]) => {
+    el.addEventListener('input', () => {
+      active = key;
+      calculate(key, parseFloat(el.value) || 0);
+    });
+  });
+
+  function fmt(n) {
+    if (n === 0) return '0';
+    if (Number.isInteger(n)) return n.toLocaleString('ko-KR');
+    return parseFloat(n.toFixed(4)).toLocaleString('ko-KR');
+  }
+
+  function calculate(source, val) {
+    let polaris, bear, pen;
+
+    if (source === 'polaris') {
+      polaris = val;
+      bear = val * BEAR_PER_POLARIS;
+      pen = bear / BEAR_PER_PULL;
+    } else if (source === 'bear') {
+      bear = val;
+      polaris = bear / BEAR_PER_POLARIS;
+      pen = bear / BEAR_PER_PULL;
+    } else {
+      pen = val;
+      bear = pen * BEAR_PER_PULL;
+      polaris = bear / BEAR_PER_POLARIS;
+    }
+
+    const pulls = pen;
+    const won = polaris * WON_PER_POLARIS;
+    const tenPull = pulls / 10;
+
+    if (active !== 'polaris') inputs.polaris.value = polaris ? parseFloat(polaris.toFixed(4)) : '';
+    if (active !== 'bear') inputs.bear.value = bear ? parseFloat(bear.toFixed(2)) : '';
+    if (active !== 'pen') inputs.pen.value = pen ? parseFloat(pen.toFixed(2)) : '';
+
+    const rows = [
+      { label: '⭐ 북극성', value: fmt(polaris), unit: '개', key: 'polaris' },
+      { label: '🐻 작은곰자리', value: fmt(bear), unit: '개', key: 'bear' },
+      { label: '🪶 깃펜', value: fmt(pen), unit: '개', key: 'pen' },
+      { label: '🎲 뽑기 횟수', value: fmt(pulls), unit: '회', key: 'pull' },
+      { label: '🎰 10연차', value: fmt(tenPull), unit: '회', key: 'ten' },
+      { label: '💸 현금 환산', value: fmt(won), unit: '원', key: 'won' },
+    ];
+
+    document.getElementById('result-body').innerHTML = rows.map(r => `
+      <tr class="${r.key === source ? 'highlighted' : ''}">
+        <td>${r.label}</td>
+        <td>
+          <span class="val">${r.value}</span>
+          <span class="unit-label">${r.unit}</span>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function resetAll() {
+    Object.values(inputs).forEach(el => el.value = '');
+    active = null;
+    document.getElementById('result-body').innerHTML =
+      '<tr><td colspan="2" class="empty-msg">위 칸에 숫자를 입력해 주세요.</td></tr>';
+  }
+</script>
+</body>
+</html>
